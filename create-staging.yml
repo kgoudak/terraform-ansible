@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: false
+  
+  tasks: 
+    - name: Init terraform
+      shell: terraform init
+      args:
+        chdir: terraform/
+
+    - name: Apply terraform script
+      terraform:
+        project_path: terraform/
+        state: present

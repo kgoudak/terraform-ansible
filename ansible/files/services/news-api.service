@@ -1,0 +1,9 @@
+[Unit]
+Description=News API service
+
+[Service]
+User=ec2-user
+ExecStart=/usr/bin/java -jar /home/ec2-user/news-api/target/news-0.0.1-SNAPSHOT.jar
+
+[Install]
+WantedBy=multi-user.target

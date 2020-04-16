@@ -1,0 +1,17 @@
+---    
+- name: copy website files to target
+  copy:
+    src: "{{ item }}"
+    dest: /var/www/html/
+  with_fileglob:
+    - ../../files/website/*
+
+- name: copy template files to target
+  template:
+    src: ../../files/templates/scripts.js.j2
+    dest: /var/www/html/scripts.js
+
+- name: reload service httpd, in all cases
+  systemd:
+    name: httpd
+    state: reloaded

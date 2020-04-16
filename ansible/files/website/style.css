@@ -1,0 +1,33 @@
+#root {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+body {
+  font-family: 'Ubuntu', serif;
+  background-color: whitesmoke;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card {
+  margin: 10px;
+  padding: 10px;
+  border: 2px solid gray;
+  background-color: white;
+}
+
+@media screen and (min-width: 600px) {
+  .card {
+      flex: 1 1 calc(50% - 2rem);
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .card {
+      flex: 1 1 calc(33% - 2rem);
+  }
+}

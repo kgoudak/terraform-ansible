@@ -1,0 +1,72 @@
+const app = document.getElementById('root')
+
+const container = document.createElement('div')
+container.setAttribute('class', 'container')
+app.appendChild(container)
+
+var request = new XMLHttpRequest()
+var hostUrl = 'http://{{ host }}:8090'
+console.log('host URL: ' + hostUrl)
+// request.open('GET', 'http://localhost:8090', true)
+request.open('GET', hostUrl, true)
+
+request.onload = function() {
+    var response = this.response;
+  
+    // Get articles from JSON response
+    var articles = JSON.parse(response)['articles']
+    
+    articles.forEach(article => {
+        const card = document.createElement('div')
+        card.setAttribute('class', 'card')
+        
+        // Image
+        const image = document.createElement('img')
+        var articleImage = article.urlToImage
+        if (articleImage !== null && articleImage !== undefined) {
+            image.src = articleImage
+        } else {
+            image.src = "news.png"
+            image.style.backgroundColor = "whitesmoke";
+        }
+        image.style.width = "550px";
+        image.style.height = "250px";
+
+        // Title
+        const title = document.createElement('h2')
+        title.textContent = article.title
+
+        // Published At
+        const publishedAt = document.createElement('h5')
+        var date = new Date(article.publishedAt);
+        publishedAt.textContent = date.toLocaleString()
+        publishedAt.style.color = "gray"
+
+        // Text
+        const articleText = document.createElement('p')
+        if (article.description !== null && article.description !== undefined) {
+            article.description = article.description.substring(0, 300)
+        } else {
+            article.description = ''
+        }
+        articleText.textContent = `${article.description}...`
+        
+        // Read more
+        const readMore = document.createElement('a')
+        var linkText = document.createTextNode("Read more...")
+        readMore.appendChild(linkText)
+        readMore.title = "Read more..."
+        readMore.href = article.url
+        readMore.target = "_blank"
+
+        // Build card
+        container.appendChild(card)
+        card.appendChild(image)
+        card.appendChild(title)
+        card.appendChild(publishedAt)
+        card.appendChild(articleText)
+        card.appendChild(readMore)
+    })
+}
+
+request.send()

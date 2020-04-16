@@ -1,0 +1,9 @@
+---
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: start news-api service
+  systemd:
+    name: news-api
+    state: started

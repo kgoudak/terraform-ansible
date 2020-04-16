@@ -1,0 +1,19 @@
+---
+- name: install git 
+  yum:
+    name: git
+    state: present
+
+- name: creates directory to clone repo
+  file:
+    path: "{{ cloned_repo_path }}"
+    state: directory
+  become: yes
+  become_user: ec2-user
+
+- name: clone repository locally
+  git:
+    repo: https://github.com/kgoudak/news-api.git
+    dest: "{{ cloned_repo_path }}"  
+  become: yes
+  become_user: ec2-user

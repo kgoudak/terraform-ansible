@@ -1,0 +1,16 @@
+---
+- name: install httpd package
+  yum:
+    name: httpd
+
+- name: start the httpd service
+  service: 
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: enable service httpd and ensure it is not masked
+  systemd:
+    name: httpd
+    enabled: yes
+    masked: no

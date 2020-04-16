@@ -1,0 +1,23 @@
+---
+- name: execute mvn clean & install
+  shell: mvn clean install
+  register: mvn_result
+  args:
+    chdir: news-api/
+  become: yes
+  become_user: ec2-user
+
+- name: mvn task output
+  debug:
+    var: mvn_result
+
+- name: copy service unit file to server
+  copy:
+    src: files/services/news-api.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - reload systemd daemon
+    - start news-api service
+

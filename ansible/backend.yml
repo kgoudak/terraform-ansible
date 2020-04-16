@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: yes
+  become_user: root
+
+  pre_tasks:
+    - name: update all packages
+      yum: 
+        name: "*"
+        state: latest
+  
+  roles:
+    - java
+    - maven
+    - git
+    - news_api
