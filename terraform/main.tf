@@ -128,6 +128,14 @@ resource "aws_security_group" "public" {
     cidr_blocks = ["${var.ssh_location}/32"]
   }
 
+  ingress {
+    description = "Allow Request to Apache"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["${var.ssh_location}/32"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -227,9 +235,7 @@ resource "aws_instance" "news_api" {
   provisioner "local-exec" {
     command = <<EOT
       ansible-playbook -i '${self.private_ip},' \
-      --ssh-common-args '-o ProxyCommand="ssh -W %h:%p -q ec2-user@${aws_instance.bastion.public_ip}" \
-                         -o StrictHostKeyChecking=no \
-                         -o UserKnownHostsFile=/dev/null' \
+      --ssh-common-args '-o ProxyCommand="ssh -W %h:%p -q ec2-user@${aws_instance.bastion.public_ip}" ' \
       -u ec2-user \
       --private-key ${var.private_key_file_path} \
       ../ansible/backend.yml 
@@ -266,8 +272,6 @@ resource "aws_instance" "news_website" {
   provisioner "local-exec" {
     command = <<EOT
       ansible-playbook  -i '${self.public_ip},' \
-                        --ssh-common-args '-o StrictHostKeyChecking=no \
-                                           -o UserKnownHostsFile=/dev/null' \
                         -u ec2-user \
                         --private-key ${var.private_key_file_path} \
                         --extra-vars "host=${aws_instance.news_api.private_ip}" \
