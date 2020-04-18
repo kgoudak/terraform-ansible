@@ -3,25 +3,20 @@
   gather_facts: false
   
   tasks: 
-    - name: Create target directory
-      file: path=/etc/news-app state=director
-
     - name: Copy file
       copy: 
         src: "{{ item }}"
-        dest: /etc/news-app/
+        dest: ~/
       with_fileglob:
-        - files/*
+        - files/*    
+        - files/.*    # include hidden files
 
     - name: init terraform
       shell: terraform init
       args:
         chdir: terraform/
 
-    - name: apply terraform script
-      terraform:
-        project_path: terraform/
-        state: present
-  
-  environment:
-    ANSIBLE_CONFIG: /etc/news-app/ansible.cfg
+    # - name: apply terraform script
+    #   terraform:
+    #     project_path: terraform/
+    #     state: present
