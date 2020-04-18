@@ -182,7 +182,7 @@ resource "aws_security_group" "private" {
     from_port   = 8090
     to_port     = 8090
     protocol    = "tcp"
-    cidr_blocks = ["${var.ssh_location}/32"]
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   egress {
