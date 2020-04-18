@@ -4,11 +4,11 @@ const container = document.createElement('div')
 container.setAttribute('class', 'container')
 app.appendChild(container)
 
-var request = new XMLHttpRequest()
 var hostUrl = 'http://{{ host }}:8090'
-console.log('host URL: ' + hostUrl)
-// request.open('GET', 'http://localhost:8090', true)
+var request = new XMLHttpRequest()
+request.addEventListener("load", reqListener)
 request.open('GET', hostUrl, true)
+request.send()
 
 request.onload = function() {
     var response = this.response;
