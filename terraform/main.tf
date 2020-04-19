@@ -403,8 +403,6 @@ resource "aws_lb" "news_api" {
   security_groups    = [aws_security_group.private.id]
   subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
-  enable_deletion_protection = true
-
   tags = {
     Name = "news-api-lb"
   }
