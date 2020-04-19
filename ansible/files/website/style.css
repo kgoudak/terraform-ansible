@@ -8,7 +8,7 @@ body {
   background-color: whitesmoke;
 }
 
-.container {
+.main {
   display: flex;
   flex-wrap: wrap;
 }
