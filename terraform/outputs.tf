@@ -4,6 +4,6 @@ output "bastion_public_address" {
 }
 
 output "news_website_address" {
-  value       = "http://${aws_instance.news_website.public_ip}:8080"
-  description = "The public address of the news website"
+  value       = "http://${aws_instance.news_website.public_dns}"
+  description = "The public DNS of the news website"
 }
