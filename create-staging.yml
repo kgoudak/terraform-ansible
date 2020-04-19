@@ -3,13 +3,15 @@
   gather_facts: false
   
   tasks: 
-    - name: Copy file
+    - name: copy .ansible.cfg file at user's home dir
       copy: 
-        src: "{{ item }}"
+        src: files/.ansible.cfg
         dest: ~/
-      with_fileglob:
-        - files/*    
-        - files/.*    # include hidden files
+
+    - name: copy ssh.cfg file 
+      copy:
+        src: files/news-app-ssh.cfg
+        dest: /tmp/
 
     - name: init terraform
       shell: terraform init
