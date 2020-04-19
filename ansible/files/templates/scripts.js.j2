@@ -1,20 +1,17 @@
 const app = document.getElementById('root')
 
-const container = document.createElement('div')
-container.setAttribute('class', 'container')
-app.appendChild(container)
+const main = document.createElement('div')
+main.setAttribute('class', 'main')
+app.appendChild(main)
 
-var hostUrl = 'http://{{ host }}:8090'
 var request = new XMLHttpRequest()
-request.addEventListener("load", reqListener)
-request.open('GET', hostUrl, true)
+request.addEventListener("load", parseNews)
+request.open('GET', 'http://{{ host }}:8090', true)
 request.send()
 
-request.onload = function() {
-    var response = this.response;
-  
+function parseNews() { 
     // Get articles from JSON response
-    var articles = JSON.parse(response)['articles']
+    var articles = JSON.parse(this.response)['articles']
     
     articles.forEach(article => {
         const card = document.createElement('div')
@@ -60,7 +57,7 @@ request.onload = function() {
         readMore.target = "_blank"
 
         // Build card
-        container.appendChild(card)
+        main.appendChild(card)
         card.appendChild(image)
         card.appendChild(title)
         card.appendChild(publishedAt)
@@ -68,5 +65,3 @@ request.onload = function() {
         card.appendChild(readMore)
     })
 }
-
-request.send()
