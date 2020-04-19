@@ -400,7 +400,7 @@ resource "aws_lb" "news_api" {
   name               = "news-api-lb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.public.id]
+  security_groups    = [aws_security_group.private.id]
   subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
   enable_deletion_protection = true
