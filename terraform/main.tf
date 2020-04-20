@@ -227,16 +227,33 @@ resource "aws_security_group" "private" {
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
-  # ingress {
-  #   description = "Allow HTTP"
-  #   from_port   = 80
-  #   to_port     = 80
-  #   protocol    = "tcp"
-  #   cidr_blocks = [aws_vpc.main.cidr_block]
-  # }
-
   ingress {
     description = "Allow Request to News API"
+    from_port   = 8090
+    to_port     = 8090
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "private-sg"
+  }
+}
+
+resource "aws_security_group" "alb" {
+  name        = "alb sg"
+  description = "Allow access to 8090"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Allow Request to Apache"
     from_port   = 8090
     to_port     = 8090
     protocol    = "tcp"
@@ -251,7 +268,7 @@ resource "aws_security_group" "private" {
   }
 
   tags = {
-    Name = "private-sg"
+    Name = "alb-sg"
   }
 }
 
@@ -268,7 +285,7 @@ resource "aws_instance" "bastion" {
   }
 }
 
-resource "aws_instance" "news_api_a" {
+resource "aws_instance" "latest_news_api_a" {
   ami                         = var.ec2_image_ids[var.region]
   instance_type               = var.ec2_instance_type
   key_name                    = var.private_key_name
@@ -277,7 +294,7 @@ resource "aws_instance" "news_api_a" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "news-api"
+    Name = "latest-news-api"
   }
 
   depends_on = [aws_instance.bastion]
@@ -312,7 +329,7 @@ resource "aws_instance" "news_api_a" {
   }
 }
 
-resource "aws_instance" "news_api_b" {
+resource "aws_instance" "latest_news_api_b" {
   ami                         = var.ec2_image_ids[var.region]
   instance_type               = var.ec2_instance_type
   key_name                    = var.private_key_name
@@ -321,7 +338,7 @@ resource "aws_instance" "news_api_b" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "news-api"
+    Name = "latest-news-api"
   }
 
   depends_on = [aws_instance.bastion]
@@ -356,18 +373,18 @@ resource "aws_instance" "news_api_b" {
   }
 }
 
-resource "aws_instance" "news_website" {
+resource "aws_instance" "latest_news_website" {
   ami                    = var.ec2_image_ids[var.region]
   instance_type          = var.ec2_instance_type
   key_name               = var.private_key_name
   subnet_id              = aws_subnet.public_b.id
   vpc_security_group_ids = [aws_security_group.public.id]
 
-  # Need to wait for news-api LB to be created, as we need its DNS
-  depends_on = [aws_lb.news_api]
+  # Need to wait for latest-news-api LB to be created, as we need its DNS
+  depends_on = [aws_lb.latest_news_api]
 
   tags = {
-    Name = "news-website"
+    Name = "latest-news-website"
   }
 
   # We run this to make sure server is initialized before we run the "local exec"
@@ -389,28 +406,28 @@ resource "aws_instance" "news_website" {
         -i '${self.public_ip},' \
         -u ec2-user \
         --private-key ${var.private_key_file_path} \
-        --extra-vars "host=${aws_lb.news_api.dns_name}" \
+        --extra-vars "host=${aws_lb.latest_news_api.dns_name}" \
         ../ansible/frontend.yml 
     EOT  
   }
 }
 
 # Application Load Balancers
-resource "aws_lb" "news_api" {
-  name               = "news-api-lb"
+resource "aws_lb" "latest_news_api" {
+  name               = "latest-news-api-lb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.private.id]
+  security_groups    = [aws_security_group.alb.id]
   subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
   tags = {
-    Name = "news-api-lb"
+    Name = "latest-news-api-lb"
   }
 }
 
 # Target Group
-resource "aws_lb_target_group" "news_api" {
-  name     = "news-api-lb-tg"
+resource "aws_lb_target_group" "latest_news_api" {
+  name     = "latest-news-api-lb-tg"
   port     = 8090
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
@@ -429,31 +446,31 @@ resource "aws_lb_target_group" "news_api" {
 
 
   tags = {
-    Name = "news-api-lb-tg"
+    Name = "latest-news-api-lb-tg"
   }
 }
 
 # ALB Listeners
-resource "aws_lb_listener" "news_api" {
-  load_balancer_arn = aws_lb.news_api.arn
+resource "aws_lb_listener" "latest_news_api" {
+  load_balancer_arn = aws_lb.latest_news_api.arn
   port              = "8090"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.news_api.arn
+    target_group_arn = aws_lb_target_group.latest_news_api.arn
   }
 }
 
 # ALB Target Group Attachments
 resource "aws_lb_target_group_attachment" "target_a" {
-  target_group_arn = aws_lb_target_group.news_api.arn
-  target_id        = aws_instance.news_api_a.id
+  target_group_arn = aws_lb_target_group.latest_news_api.arn
+  target_id        = aws_instance.latest_news_api_a.id
   port             = 8090
 }
 
 resource "aws_lb_target_group_attachment" "target_b" {
-  target_group_arn = aws_lb_target_group.news_api.arn
-  target_id        = aws_instance.news_api_b.id
+  target_group_arn = aws_lb_target_group.latest_news_api.arn
+  target_id        = aws_instance.latest_news_api_b.id
   port             = 8090
 }
